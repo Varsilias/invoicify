@@ -7,7 +7,7 @@ const Navbar = () => {
   const { dark, toggle } = useTheme();
 
   return (
-    <div className="bg-[#373B53] flex items-center w-full">
+    <div className="bg-[#373B53] flex items-center w-full lg:hidden">
       <div className="logo flex justify-start items-center grow">
         <div className="px-[22px] py-[23px] bg-gradient-to-b from-[#7C5DFA] to-[#9277FF] rounded-tr-3xl rounded-br-3xl">
           <img src={logo} alt="invoicify-logo" />
