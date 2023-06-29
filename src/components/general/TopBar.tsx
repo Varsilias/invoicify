@@ -3,9 +3,11 @@ import { AddNewIcon, ArrowDownIcon, BackIcon } from "../icons";
 import PrimaryButton from "./buttons/PrimaryButton";
 import useClickOutside from "../../hooks/useClickOutside";
 import { useNavigate } from "react-router-dom";
+import useMediaQuery from "../../hooks/useMediaQuery";
 
 const TopBar = ({ isMainPage = true }: { isMainPage?: boolean }) => {
-  const [showDropdown, setShowDropdown] = useState(true);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const { breakpoint } = useMediaQuery();
 
   const { ref } = useClickOutside({
     onClickOutside() {
@@ -19,23 +21,27 @@ const TopBar = ({ isMainPage = true }: { isMainPage?: boolean }) => {
     <React.Fragment>
       {isMainPage ? (
         <div className="flex items-center w-full">
-          <div className="heading w-[60%]">
-            <h1 className="text-invoicify-08 text-base dark:text-white">
+          <div className="heading grow mr-4">
+            <h1 className="text-invoicify-08 text-base dark:text-white mb-2">
               Invoices
             </h1>
             <p className="text-invoicify-06 text-body dark:text-invoicify-05">
-              7 Invoices
+              {breakpoint === "xs" || breakpoint === "sm"
+                ? `7 Invoices`
+                : `There are 7 Invoices`}
             </p>
           </div>
 
           <div
-            className="filter relative w-[20%] mr-5 cursor-pointer"
+            className="filter relative mr-5 cursor-pointer"
             onClick={() => setShowDropdown(!showDropdown)}
             ref={ref}
           >
             <div className="flex items-center">
               <span className="mr-3 text-sm-variant dark:text-white">
-                Filter
+                {breakpoint === "xs" || breakpoint === "sm"
+                  ? `Filter`
+                  : `Filter by status`}
               </span>
               <ArrowDownIcon />
             </div>
@@ -64,10 +70,14 @@ const TopBar = ({ isMainPage = true }: { isMainPage?: boolean }) => {
             )}
           </div>
 
-          <div className="">
+          <div>
             <PrimaryButton className="bg-invoicify-01 py-[6px] pl-2 pr-3 flex items-center">
               <AddNewIcon />
-              <span className="ml-2 text-white">New</span>
+              <span className="ml-2 text-white">
+                {breakpoint === "xs" || breakpoint === "sm"
+                  ? `New`
+                  : `New Invoice`}
+              </span>
             </PrimaryButton>
           </div>
         </div>
@@ -81,7 +91,9 @@ const TopBar = ({ isMainPage = true }: { isMainPage?: boolean }) => {
           </div>
 
           <div>
-            <h1 className="text-sm-variant dark:text-white">Go back</h1>
+            <h1 className="text-sm-variant dark:text-white hover:text-invoicify-07">
+              Go back
+            </h1>
           </div>
         </div>
       )}

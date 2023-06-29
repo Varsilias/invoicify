@@ -12,6 +12,10 @@ export default {
         "24px",
         { lineHeight: "22px", letterSpacing: "-0.75", fontWeight: "700" },
       ],
+      "base-variant": [
+        "24px",
+        { lineHeight: "32px", letterSpacing: "-0.75", fontWeight: "700" },
+      ],
       sm: [
         "15px",
         { lineHeight: "24px", letterSpacing: "-0.25", fontWeight: "700" },
@@ -23,6 +27,10 @@ export default {
       body: [
         "13px",
         { lineHeight: "15px", letterSpacing: "-0.1", fontWeight: "500" },
+      ],
+      "body-sm": [
+        "13px",
+        { lineHeight: "22px", letterSpacing: "-0.1", fontWeight: "500" },
       ],
       "body-variant": [
         "13px",
@@ -45,6 +53,9 @@ export default {
           11: "#F8F8FB",
           12: "#141625",
         },
+      },
+      screens: {
+        xs: "360px",
       },
     },
   },

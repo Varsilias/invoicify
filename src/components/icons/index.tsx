@@ -116,3 +116,64 @@ export const BackIcon: React.FC = () => {
     </>
   );
 };
+
+export const DeleteIcon = () => {
+  return (
+    <>
+      <svg
+        width="13"
+        height="16"
+        viewBox="0 0 13 16"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          fillRule="evenodd"
+          clipRule="evenodd"
+          d="M8.44442 0L9.33333 0.888875H12.4444V2.66667H0V0.888875H3.11108L4 0H8.44442ZM2.66667 16C1.68442 16 0.888875 15.2045 0.888875 14.2222V3.55554H11.5555V14.2222C11.5555 15.2045 10.76 16 9.77779 16H2.66667Z"
+          fill="#888EB0"
+        />
+      </svg>
+    </>
+  );
+};
+
+export const ArrowDown = () => {
+  return (
+    <>
+      <svg
+        width="11"
+        height="7"
+        viewBox="0 0 11 7"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M1 1L5.2279 5.2279L9.4558 1"
+          stroke="#7C5DFA"
+          strokeWidth="2"
+        />
+      </svg>
+    </>
+  );
+};
+
+export const ArrowUpIcon = () => {
+  return (
+    <>
+      <svg
+        width="11"
+        height="7"
+        viewBox="0 0 11 7"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M1 1L5.2279 5.2279L9.4558 1"
+          stroke="#7C5DFA"
+          strokeWidth="2"
+        />
+      </svg>
+    </>
+  );
+};
