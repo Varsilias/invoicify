@@ -318,102 +318,84 @@ const EditInvoiceForm = ({ invoice }: { invoice: Record<string, any> }) => {
                   return (
                     <div>
                       {items && items.length > 0
-                        ? items.map(
-                            (
-                              item: {
-                                name: string;
-                                price: number;
-                                quantity: number;
-                                total: number;
-                              },
-                              index: number
-                            ) => (
-                              <div
-                                className="item_name flex flex-col md:flex-row mb-6 md:space-x-5"
-                                key={index}
-                              >
-                                <div className="md:mt-0 md:basis-1/2 md:grow">
-                                  <Field name={`items[${index}].name`}>
-                                    {({ field, form, meta }: FieldProps) => (
-                                      <Input
-                                        field={field}
-                                        form={form}
-                                        meta={meta}
-                                        inputType="text"
-                                        label="Item Name"
-                                      />
-                                    )}
-                                  </Field>
-                                </div>
+                        ? items.map((_, index: number) => (
+                            <div
+                              className="item_name flex flex-col md:flex-row mb-6 md:space-x-5"
+                              key={index}
+                            >
+                              <div className="md:mt-0 md:basis-1/2 md:grow">
+                                <Field name={`items[${index}].name`}>
+                                  {({ field, form, meta }: FieldProps) => (
+                                    <Input
+                                      field={field}
+                                      form={form}
+                                      meta={meta}
+                                      inputType="text"
+                                      label="Item Name"
+                                    />
+                                  )}
+                                </Field>
+                              </div>
 
-                                <div className="flex space-x-4 items-center mt-6 md:mt-0  w-full">
-                                  <div className="qty w-[30%] md:w-[25%]">
-                                    <div className="qty flex flex-col mb-6">
-                                      <Field name={`items[${index}].quantity`}>
-                                        {({
-                                          field,
-                                          form,
-                                          meta,
-                                        }: FieldProps) => (
-                                          <Input
-                                            field={field}
-                                            form={form}
-                                            meta={meta}
-                                            inputType="number"
-                                            label="Qty."
-                                            min={1}
-                                          />
-                                        )}
-                                      </Field>
-                                    </div>
-                                  </div>
-                                  <div className="price w-[45%] md:w-[45%]">
-                                    <div className="price flex flex-col mb-6">
-                                      <Field name={`items[${index}].price`}>
-                                        {({
-                                          field,
-                                          form,
-                                          meta,
-                                        }: FieldProps) => (
-                                          <Input
-                                            field={field}
-                                            form={form}
-                                            meta={meta}
-                                            inputType="text"
-                                            label="Price"
-                                          />
-                                        )}
-                                      </Field>
-                                    </div>
-                                  </div>
-                                  <div className="total w-[20%] md:w-[20%]">
-                                    <div className="total">
-                                      <div className="total flex flex-col mb-6">
-                                        <label
-                                          htmlFor="total"
-                                          className="text-body-variant text-invoicify-07 pb-2"
-                                        >
-                                          Total
-                                        </label>
-                                        <ReadOnlyInput
-                                          name={`items.${index}.total`}
-                                          index={index}
+                              <div className="flex space-x-4 items-center mt-6 md:mt-0  w-full">
+                                <div className="qty w-[30%] md:w-[25%]">
+                                  <div className="qty flex flex-col mb-6">
+                                    <Field name={`items[${index}].quantity`}>
+                                      {({ field, form, meta }: FieldProps) => (
+                                        <Input
+                                          field={field}
+                                          form={form}
+                                          meta={meta}
+                                          inputType="number"
+                                          label="Qty."
+                                          min={1}
                                         />
-                                      </div>
+                                      )}
+                                    </Field>
+                                  </div>
+                                </div>
+                                <div className="price w-[45%] md:w-[45%]">
+                                  <div className="price flex flex-col mb-6">
+                                    <Field name={`items[${index}].price`}>
+                                      {({ field, form, meta }: FieldProps) => (
+                                        <Input
+                                          field={field}
+                                          form={form}
+                                          meta={meta}
+                                          inputType="text"
+                                          label="Price"
+                                        />
+                                      )}
+                                    </Field>
+                                  </div>
+                                </div>
+                                <div className="total w-[20%] md:w-[20%]">
+                                  <div className="total">
+                                    <div className="total flex flex-col mb-6">
+                                      <label
+                                        htmlFor="total"
+                                        className="text-body-variant text-invoicify-07 pb-2"
+                                      >
+                                        Total
+                                      </label>
+                                      <ReadOnlyInput
+                                        name={`items.${index}.total`}
+                                        index={index}
+                                      />
                                     </div>
                                   </div>
-                                  <div className="delete cursor-pointer w-[5%]">
-                                    <div
-                                      className="flex justify-end md:justify-normal"
-                                      onClick={() => arrayHelpers.remove(index)}
-                                    >
-                                      <DeleteIcon />
-                                    </div>
+                                </div>
+                                <div className="delete cursor-pointer w-[5%]">
+                                  <div
+                                    className="flex justify-end md:justify-normal"
+                                    onClick={() => arrayHelpers.remove(index)}
+                                  >
+                                    <DeleteIcon />
                                   </div>
                                 </div>
                               </div>
-                            )
-                          )
+                            </div>
+                          ))
                         : null}
 
                       <PrimaryButton
