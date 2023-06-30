@@ -1,11 +1,9 @@
 import { Form, FieldArray, FieldProps, Field, Formik } from "formik";
 import { ArrowDown, DeleteIcon } from "../../icons";
-import { formatDate } from "../../../utils";
 import PrimaryButton from "../buttons/PrimaryButton";
 import "react-datepicker/dist/react-datepicker.css";
 import { useState } from "react";
 import useClickOutside from "../../../hooks/useClickOutside";
-import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
 import { createInvoiceFormValidationSchema } from "./validation-schema";
 import Input from "./Input";
@@ -248,17 +246,15 @@ const CreateInvoiceForm = () => {
 
             <section className="date_info mb-[69px]">
               <div className="md:flex w-full">
-                <div className="invoice_date w-full md:pr-2 flex flex-col mb-6 opacity-60">
+                <div className="invoice_date w-full md:pr-2 flex flex-col mb-6">
                   <Field name="paymentDue">
                     {({ field, form, meta }: FieldProps) => (
                       <Input
-                        field={{ ...field, value: formatDate(field.value) }}
+                        field={field}
                         form={form}
                         meta={meta}
-                        inputType="text"
+                        inputType="date"
                         label="Invoice Date"
-                        disabled={true}
-                        readOnly={true}
                       />
                     )}
                   </Field>
