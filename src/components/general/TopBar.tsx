@@ -2,11 +2,15 @@ import React, { useState } from "react";
 import { AddNewIcon, ArrowDownIcon, BackIcon } from "../icons";
 import PrimaryButton from "./buttons/PrimaryButton";
 import useClickOutside from "../../hooks/useClickOutside";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import useMediaQuery from "../../hooks/useMediaQuery";
+import CreateInvoice from "../modules/Invoice/CreateInvoice";
+import FormModal from "./modal/FormModal";
 
 const TopBar = ({ isMainPage = true }: { isMainPage?: boolean }) => {
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showCreateInvoiceForm, setShowCreateInvoiceForm] = useState(false);
+
   const { breakpoint } = useMediaQuery();
 
   const { ref } = useClickOutside({
@@ -71,14 +75,18 @@ const TopBar = ({ isMainPage = true }: { isMainPage?: boolean }) => {
           </div>
 
           <div>
-            <PrimaryButton className="bg-invoicify-01 py-[6px] pl-2 pr-3 flex items-center">
-              <AddNewIcon />
-              <span className="ml-2 text-white">
-                {breakpoint === "xs" || breakpoint === "sm"
-                  ? `New`
-                  : `New Invoice`}
-              </span>
-            </PrimaryButton>
+            <Link to={`/invoice/new`}>
+              <div onClick={() => setShowCreateInvoiceForm(true)}>
+                <PrimaryButton className="bg-invoicify-01 py-[6px] pl-2 pr-3 flex items-center">
+                  <AddNewIcon />
+                  <span className="ml-2 text-white">
+                    {breakpoint === "xs" || breakpoint === "sm"
+                      ? `New`
+                      : `New Invoice`}
+                  </span>
+                </PrimaryButton>
+              </div>
+            </Link>
           </div>
         </div>
       ) : (
@@ -97,6 +105,21 @@ const TopBar = ({ isMainPage = true }: { isMainPage?: boolean }) => {
           </div>
         </div>
       )}
+
+      <FormModal
+        showModal={showCreateInvoiceForm}
+        onClick={() => {
+          setShowCreateInvoiceForm(false);
+          navigate(-1);
+        }}
+      >
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className="bg-white p-8 rounded-tr-lg rounded-br-lg h-screen lg:w-[70%] md:w-[75%] dark:bg-invoicify-12 overflow-y-auto"
+        >
+          <CreateInvoice />
+        </div>
+      </FormModal>
     </React.Fragment>
   );
 };

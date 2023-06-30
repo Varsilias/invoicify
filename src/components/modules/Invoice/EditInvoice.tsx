@@ -22,7 +22,9 @@ const EditInvoice = () => {
           <span>{invoice?.id}</span>
         </h1>
 
-        <EditInvoiceForm invoice={invoice!} />
+        <div className="pb-10">
+          <EditInvoiceForm invoice={invoice!} />
+        </div>
       </div>
     </section>
   );
