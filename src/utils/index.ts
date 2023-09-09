@@ -19,7 +19,7 @@ export const getCurrentBreakpoint = (): string => {
   let currentBreakpoint: string;
   let biggestBreakpointValue = 0;
   for (const breakpoint of Object.keys(
-    fullConfig.theme?.screens as Record<string, string>
+    fullConfig.theme?.screens as Record<string, string>,
   )) {
     const breakpointValue = getBreakPointValue(breakpoint);
     if (
@@ -36,3 +36,5 @@ export const getCurrentBreakpoint = (): string => {
 export const formatDate = (value: string) => {
   return dayjs(value).format("D MMM YYYY");
 };
+
+export const ACCESS_TOKEN_KEY = "invoicify_token";

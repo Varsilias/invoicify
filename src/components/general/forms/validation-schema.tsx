@@ -30,7 +30,7 @@ export const editFormValidationSchema = Yup.object().shape({
       price: Yup.number()
         .positive("must be positive")
         .required("unit price is required"),
-    })
+    }),
   ),
 });
 
@@ -64,6 +64,31 @@ export const createInvoiceFormValidationSchema = Yup.object().shape({
       price: Yup.number()
         .positive("must be positive")
         .required("unit price is required"),
-    })
+    }),
   ),
+});
+
+export const updateProfileFormValidation = Yup.object().shape({
+  firstname: Yup.string().required("can't be empty"),
+  lastname: Yup.string().required("can't be empty"),
+  street: Yup.string().required("can't be empty"),
+  city: Yup.string().required("can't be empty"),
+  postCode: Yup.string().required("can't be empty"),
+  country: Yup.string().required("can't be empty"),
+});
+
+export const signUpFormValidation = Yup.object().shape({
+  firstname: Yup.string().required("can't be empty"),
+  lastname: Yup.string().required("can't be empty"),
+  email: Yup.string()
+    .email("value must be an email")
+    .required("can't be empty"),
+  password: Yup.string().required("can't be empty"),
+});
+
+export const loginFormValidation = Yup.object().shape({
+  email: Yup.string()
+    .email("value must be an email")
+    .required("can't be empty"),
+  password: Yup.string().required("can't be empty"),
 });

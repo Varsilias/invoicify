@@ -1,5 +1,5 @@
 import CreateInvoiceComponent from "../components/modules/Invoice/CreateInvoice";
-import MainLayout from "../components/general/MainLayout";
+import MainLayout from "../components/layouts/MainLayout";
 import useMediaQuery from "../hooks/useMediaQuery";
 import InvoiceListWithModal from "../components/modules/Invoice/InvoiceListWithModal";
 

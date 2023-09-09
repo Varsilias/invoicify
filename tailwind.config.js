@@ -3,40 +3,6 @@ export default {
   darkMode: "class",
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
-    fontSize: {
-      lg: [
-        "36px",
-        { lineHeight: "33px", letterSpacing: "-1", fontWeight: "700" },
-      ],
-      base: [
-        "24px",
-        { lineHeight: "22px", letterSpacing: "-0.75", fontWeight: "700" },
-      ],
-      "base-variant": [
-        "24px",
-        { lineHeight: "32px", letterSpacing: "-0.75", fontWeight: "700" },
-      ],
-      sm: [
-        "15px",
-        { lineHeight: "24px", letterSpacing: "-0.25", fontWeight: "700" },
-      ],
-      "sm-variant": [
-        "15px",
-        { lineHeight: "15px", letterSpacing: "-0.25", fontWeight: "700" },
-      ],
-      body: [
-        "13px",
-        { lineHeight: "15px", letterSpacing: "-0.1", fontWeight: "500" },
-      ],
-      "body-sm": [
-        "13px",
-        { lineHeight: "22px", letterSpacing: "-0.1", fontWeight: "500" },
-      ],
-      "body-variant": [
-        "13px",
-        { lineHeight: "15px", letterSpacing: "-0.25", fontWeight: "500" },
-      ],
-    },
     extend: {
       colors: {
         invoicify: {
@@ -56,6 +22,40 @@ export default {
       },
       screens: {
         xs: "360px",
+      },
+      fontSize: {
+        lg: [
+          "36px",
+          { lineHeight: "33px", letterSpacing: "-1", fontWeight: "700" },
+        ],
+        base: [
+          "24px",
+          { lineHeight: "22px", letterSpacing: "-0.75", fontWeight: "700" },
+        ],
+        "base-variant": [
+          "24px",
+          { lineHeight: "32px", letterSpacing: "-0.75", fontWeight: "700" },
+        ],
+        sm: [
+          "15px",
+          { lineHeight: "24px", letterSpacing: "-0.25", fontWeight: "700" },
+        ],
+        "sm-variant": [
+          "15px",
+          { lineHeight: "15px", letterSpacing: "-0.25", fontWeight: "700" },
+        ],
+        body: [
+          "13px",
+          { lineHeight: "15px", letterSpacing: "-0.1", fontWeight: "500" },
+        ],
+        "body-sm": [
+          "13px",
+          { lineHeight: "22px", letterSpacing: "-0.1", fontWeight: "500" },
+        ],
+        "body-variant": [
+          "13px",
+          { lineHeight: "15px", letterSpacing: "-0.25", fontWeight: "500" },
+        ],
       },
     },
   },

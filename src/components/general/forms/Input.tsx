@@ -14,6 +14,7 @@ const Input: React.FC<InputProps> = ({
   meta,
   inputType,
   label,
+  disabled,
   ...props
 }) => {
   // console.log({ field, form, meta, inputType });
@@ -35,10 +36,13 @@ const Input: React.FC<InputProps> = ({
         type={inputType}
         {...field}
         {...props}
+        disabled={disabled}
         className={`${
           meta.touched && meta.error
             ? "border-invoicify-09 dark:border-invoicify-09"
             : "border-invoicify-05 dark:border-invoicify-04"
+        } ${
+          disabled ? "opacity-50" : ""
         } w-full px-5 py-4 outline-none border border-invoicify-05 rounded text-sm-variant dark:text-white dark:bg-invoicify-03`}
       />
     </div>
