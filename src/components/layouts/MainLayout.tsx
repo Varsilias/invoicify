@@ -2,7 +2,7 @@ import { PropsWithChildren } from "react";
 import Navbar from "../general/Navbar";
 import SideNavBar from "../general/SideNavBar";
 import { useAuthContext } from "../../context";
-import { Navigate } from "react-router-dom";
+import Unauthenticated from "../general/Unauthenticated";
 
 const MainLayout = ({
   children,
@@ -12,7 +12,7 @@ const MainLayout = ({
 
   return isAuthenticated ? (
     <div
-      className={`h-full ${
+      className={`min-h-screen ${
         isForm ? "bg-white" : "bg-invoicify-11"
       } dark:bg-invoicify-12 lg:flex lg:flex-col lg:grow`}
     >
@@ -26,11 +26,10 @@ const MainLayout = ({
         <main className="h-full px-6 md:mx-[100px] lg:mx-[200px] xl:mx-[250px] lg:w-full">
           {children}
         </main>
-        div
       </div>
     </div>
   ) : (
-    <Navigate to={`/auth/login`} />
+    <Unauthenticated />
   );
 };
 

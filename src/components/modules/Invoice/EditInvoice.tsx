@@ -1,13 +1,29 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import TopBar from "../../general/TopBar";
 import { useParams } from "react-router-dom";
-import data from "../../../../data.json";
 import EditInvoiceForm from "../../general/forms/EditInvoiceForm";
+import { handleError } from "../../../utils";
+import { Toast } from "../../general/toast/Toast";
+import { toast } from "react-toastify";
+import useGetInvoiceByPublicId from "../../../hooks/api/invoices/useGetInvoiceByPublicId";
 
 const EditInvoice = () => {
+  const [invoice, setInvoice] = useState<Record<string, any>>({});
   const { id } = useParams();
 
-  const [invoice, _] = useState(() => data.find((item) => item.id === id));
+  const { mutate: getInvoiceByPublicId } = useGetInvoiceByPublicId({
+    onSuccess(data) {
+      const res = data?.data;
+      setInvoice(res?.data);
+    },
+    onError(error) {
+      handleError(error, (message) => toast(<Toast>{message}</Toast>));
+    },
+  });
+
+  useEffect(() => {
+    getInvoiceByPublicId({ publicId: id });
+  }, [id, getInvoiceByPublicId]);
 
   return (
     <section>
@@ -19,11 +35,11 @@ const EditInvoice = () => {
         <h1 className="text-base-variant dark:text-white mb-[22px]">
           <span className="mr-2">Edit</span>
           <span className="text-invoicify-06">#</span>
-          <span>{invoice?.id}</span>
+          <span>{invoice?.invoiceId}</span>
         </h1>
 
         <div className="pb-10">
-          <EditInvoiceForm invoice={invoice!} />
+          <EditInvoiceForm publicId={id as string} />
         </div>
       </div>
     </section>

@@ -3,16 +3,77 @@ import { ArrowDown, DeleteIcon } from "../../icons";
 import { formatDate } from "../../../utils";
 import PrimaryButton from "../buttons/PrimaryButton";
 import "react-datepicker/dist/react-datepicker.css";
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import useClickOutside from "../../../hooks/useClickOutside";
-import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
 import { editFormValidationSchema } from "./validation-schema";
 import Input from "./Input";
 import ReadOnlyInput from "./ReadOnlyInput";
+import { handleError } from "../../../utils";
+import { Toast } from "../../general/toast/Toast";
+import { toast } from "react-toastify";
+import useGetInvoiceByPublicId from "../../../hooks/api/invoices/useGetInvoiceByPublicId";
+import useUpdateInvoice from "../../../hooks/api/invoices/useUpdateInvoice";
+import Modal from "../modal";
+import useDeleteInvoiceItem from "../../../hooks/api/invoices/useDeleteInvoiceItem";
 
-const EditInvoiceForm = ({ invoice }: { invoice: Record<string, any> }) => {
+const EditInvoiceForm = ({ publicId }: { publicId: string }) => {
   const navigate = useNavigate();
+
+  const [invoice, setInvoice] = useState<Record<string, any>>({});
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [itemToRemove, setItemToRemove] = useState<Record<string, string>>({});
+
+  const { isLoading, mutate: getInvoiceByPublicId } = useGetInvoiceByPublicId({
+    onSuccess(data) {
+      const res = data?.data;
+      setInvoice(res?.data);
+    },
+    onError(error) {
+      handleError(error, (message) => toast(<Toast>{message}</Toast>));
+    },
+  });
+
+  const { isLoading: updatingInvoice, mutate: updateInvoice } =
+    useUpdateInvoice({
+      onSuccess(data) {
+        const res = data?.data;
+        if (!res?.status || res?.status === "error") {
+          toast(<Toast type="error">{res?.message}</Toast>);
+        } else {
+          toast(<Toast type="success">{"Invoice updated successfully"}</Toast>);
+          navigate("/");
+        }
+      },
+      onError(error) {
+        handleError(error, (message) =>
+          toast(<Toast type="error">{message}</Toast>),
+        );
+      },
+    });
+
+  const { isLoading: deletingInvoiceItem, mutate: deleteInvoiceItem } =
+    useDeleteInvoiceItem({
+      onSuccess(data) {
+        const res = data?.data;
+        if (!res?.status || res?.status === "error") {
+          toast(<Toast type="error">{res?.message}</Toast>);
+        } else {
+          toast(<Toast type="success">{"Item deleted successfully"}</Toast>);
+          setShowModal(false);
+        }
+      },
+      onError(error) {
+        handleError(error, (message) =>
+          toast(<Toast type="error">{message}</Toast>),
+        );
+      },
+    });
+
+  useEffect(() => {
+    getInvoiceByPublicId({ publicId: publicId });
+  }, [publicId, getInvoiceByPublicId, showModal]);
 
   const { ref } = useClickOutside({
     onClickOutside() {
@@ -20,41 +81,37 @@ const EditInvoiceForm = ({ invoice }: { invoice: Record<string, any> }) => {
     },
   });
 
-  const dropdown = [
-    { text: "Net 1 Day", value: 1 },
-    { text: "Net 7 Days", value: 7 },
-    { text: "Net 14 Days", value: 14 },
-    { text: "Net 30 Days", value: 30 },
-  ];
-
-  const convertInvoiceDateIntervalsToNumbers = (
-    dueDate: string,
-    invoiceDateCreated: string
-  ) => {
-    const date1 = dayjs(dueDate);
-    const date2 = dayjs(invoiceDateCreated);
-    return date1.diff(date2, "days");
-  };
-
-  const interval = convertInvoiceDateIntervalsToNumbers(
-    invoice.paymentDue,
-    invoice.createdAt
+  const dropdown = useMemo(
+    () => [
+      { text: "Net 1 Day", value: 1 },
+      { text: "Net 7 Days", value: 7 },
+      { text: "Net 14 Days", value: 14 },
+      { text: "Net 30 Days", value: 30 },
+    ],
+    [],
   );
-
-  const initialValues = invoice;
 
   const [paymentTerms, setPaymentTerms] = useState(
-    dropdown.find(({ value }) => value === interval)
+    dropdown.find(({ value }) => value === invoice.paymentTerms),
   );
-  const [showDropdown, setShowDropdown] = useState(false);
 
-  return (
+  useEffect(() => {
+    setPaymentTerms(
+      dropdown.find(({ value }) => value === invoice.paymentTerms),
+    );
+  }, [dropdown, invoice]);
+
+  return !isLoading ? (
     <div>
       <Formik
-        initialValues={initialValues}
+        initialValues={invoice}
         validationSchema={editFormValidationSchema}
         onSubmit={(values) => {
+          delete values.senderAddress;
+          delete values.total;
           console.log(values);
+
+          updateInvoice({ ...values });
         }}
       >
         {({ setFieldValue, values }) => (
@@ -74,8 +131,10 @@ const EditInvoiceForm = ({ invoice }: { invoice: Record<string, any> }) => {
                       field={field}
                       form={form}
                       meta={meta}
+                      disabled={true}
                       inputType="text"
                       label="Street Address"
+                      className="cursor-not-allowed"
                     />
                   )}
                 </Field>
@@ -89,8 +148,10 @@ const EditInvoiceForm = ({ invoice }: { invoice: Record<string, any> }) => {
                         field={field}
                         form={form}
                         meta={meta}
+                        disabled={true}
                         inputType="text"
                         label="City"
+                        className="cursor-not-allowed"
                       />
                     )}
                   </Field>
@@ -103,8 +164,10 @@ const EditInvoiceForm = ({ invoice }: { invoice: Record<string, any> }) => {
                         field={field}
                         form={form}
                         meta={meta}
+                        disabled={true}
                         inputType="text"
                         label="Post Code"
+                        className="cursor-not-allowed"
                       />
                     )}
                   </Field>
@@ -117,8 +180,10 @@ const EditInvoiceForm = ({ invoice }: { invoice: Record<string, any> }) => {
                         field={field}
                         form={form}
                         meta={meta}
+                        disabled={true}
                         inputType="text"
                         label="Country"
+                        className="cursor-not-allowed"
                       />
                     )}
                   </Field>
@@ -161,7 +226,7 @@ const EditInvoiceForm = ({ invoice }: { invoice: Record<string, any> }) => {
               </div>
 
               <div className="client_street_address flex flex-col mb-6">
-                <Field name="clientAddress.street">
+                <Field name="clientAddress">
                   {({ field, form, meta }: FieldProps) => (
                     <Input
                       field={field}
@@ -176,7 +241,7 @@ const EditInvoiceForm = ({ invoice }: { invoice: Record<string, any> }) => {
 
               <div className="flex items-center mb-3 w-full md:space-x-5 flex-wrap md:flex-nowrap">
                 <div className="city flex flex-col mb-4 basis-1/2 grow pr-2 md:pr-0">
-                  <Field name="clientAddress.city">
+                  <Field name="clientCity">
                     {({ field, form, meta }: FieldProps) => (
                       <Input
                         field={field}
@@ -190,7 +255,7 @@ const EditInvoiceForm = ({ invoice }: { invoice: Record<string, any> }) => {
                 </div>
 
                 <div className="post_code flex flex-col mb-4 basis-1/2 grow pl-2 md:pl-0">
-                  <Field name="clientAddress.postCode">
+                  <Field name="clientPostcode">
                     {({ field, form, meta }: FieldProps) => (
                       <Input
                         field={field}
@@ -204,7 +269,7 @@ const EditInvoiceForm = ({ invoice }: { invoice: Record<string, any> }) => {
                 </div>
 
                 <div className="country flex flex-col mb-6 md:mb-4 basis-1/2 grow">
-                  <Field name="clientAddress.country">
+                  <Field name="clientCountry">
                     {({ field, form, meta }: FieldProps) => (
                       <Input
                         field={field}
@@ -232,6 +297,7 @@ const EditInvoiceForm = ({ invoice }: { invoice: Record<string, any> }) => {
                         label="Invoice Date"
                         disabled={true}
                         readOnly={true}
+                        className="cursor-not-allowed"
                       />
                     )}
                   </Field>
@@ -354,6 +420,7 @@ const EditInvoiceForm = ({ invoice }: { invoice: Record<string, any> }) => {
                                     </Field>
                                   </div>
                                 </div>
+
                                 <div className="price w-[45%] md:w-[45%]">
                                   <div className="price flex flex-col mb-6">
                                     <Field name={`items[${index}].price`}>
@@ -369,6 +436,7 @@ const EditInvoiceForm = ({ invoice }: { invoice: Record<string, any> }) => {
                                     </Field>
                                   </div>
                                 </div>
+
                                 <div className="total w-[20%] md:w-[20%]">
                                   <div className="total">
                                     <div className="total flex flex-col mb-6">
@@ -385,10 +453,24 @@ const EditInvoiceForm = ({ invoice }: { invoice: Record<string, any> }) => {
                                     </div>
                                   </div>
                                 </div>
+
                                 <div className="delete cursor-pointer w-[5%]">
                                   <div
                                     className="flex justify-end md:justify-normal"
-                                    onClick={() => arrayHelpers.remove(index)}
+                                    onClick={() => {
+                                      const itemToRemove = values.items[index];
+
+                                      if (
+                                        !Object.keys(itemToRemove).includes(
+                                          "publicId",
+                                        )
+                                      ) {
+                                        arrayHelpers.remove(index);
+                                      } else {
+                                        setItemToRemove(itemToRemove);
+                                        setShowModal(true);
+                                      }
+                                    }}
                                   >
                                     <DeleteIcon />
                                   </div>
@@ -399,7 +481,7 @@ const EditInvoiceForm = ({ invoice }: { invoice: Record<string, any> }) => {
                         : null}
 
                       <PrimaryButton
-                        className="rounded-3xl w-full hover:bg-invoicify-05 cursor-pointer dark:text-invoicify-06 dark:bg-invoicify-04 bg-[#F9FAFE] px-6 py-4 text-invoicify-06"
+                        className="rounded-3xl flex justify-center w-full hover:bg-invoicify-05 cursor-pointer dark:text-invoicify-06 dark:bg-invoicify-04 bg-[#F9FAFE] px-6 py-4 text-invoicify-06"
                         type="button"
                         onClick={() =>
                           arrayHelpers.push({
@@ -432,7 +514,10 @@ const EditInvoiceForm = ({ invoice }: { invoice: Record<string, any> }) => {
                 <PrimaryButton
                   type="button"
                   className="rounded-3xl hover:bg-invoicify-05 cursor-pointer dark:text-invoicify-05 dark:bg-invoicify-04 bg-[#F9FAFE] px-6 py-4 text-invoicify-07"
-                  onClick={() => navigate(-1)}
+                  onClick={() => {
+                    document.body.style.overflow = "";
+                    navigate(-1);
+                  }}
                 >
                   Cancel
                 </PrimaryButton>
@@ -442,6 +527,7 @@ const EditInvoiceForm = ({ invoice }: { invoice: Record<string, any> }) => {
                 <PrimaryButton
                   type="submit"
                   className="rounded-3xl cursor-pointer px-6 py-4 text-white bg-invoicify-01"
+                  isLoading={updatingInvoice}
                 >
                   Save Changes
                 </PrimaryButton>
@@ -454,7 +540,10 @@ const EditInvoiceForm = ({ invoice }: { invoice: Record<string, any> }) => {
                   <PrimaryButton
                     type="button"
                     className="rounded-3xl hover:bg-invoicify-05 cursor-pointer dark:text-invoicify-05 dark:bg-invoicify-04 bg-[#F9FAFE] px-6 py-4 text-invoicify-07"
-                    onClick={() => navigate(-1)}
+                    onClick={() => {
+                      document.body.style.overflow = "";
+                      navigate(-1);
+                    }}
                   >
                     Cancel
                   </PrimaryButton>
@@ -464,6 +553,7 @@ const EditInvoiceForm = ({ invoice }: { invoice: Record<string, any> }) => {
                   <PrimaryButton
                     type="submit"
                     className="rounded-3xl cursor-pointer px-6 py-4 text-white bg-invoicify-01"
+                    isLoading={updatingInvoice}
                   >
                     Save Changes
                   </PrimaryButton>
@@ -473,8 +563,45 @@ const EditInvoiceForm = ({ invoice }: { invoice: Record<string, any> }) => {
           </Form>
         )}
       </Formik>
+
+      <Modal showModal={showModal} onClick={() => setShowModal(false)}>
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className="w-[80%] md:w-[60%] lg:w-[40%] bg-white p-8 rounded-lg dark:bg-invoicify-03"
+        >
+          <div>
+            <h1 className="text-base-variant mb-2 dark:text-white">
+              Confirm Deletion
+            </h1>
+            <p className="text-body-sm text-invoicify-06">
+              {`Are you sure you want to delete the following invoice item **${itemToRemove?.name}**? This action
+              cannot be undone.`}
+            </p>
+            <div className="action_buttons mt-5 flex items-center space-x-2 justify-end">
+              <div onClick={() => setShowModal(false)}>
+                <PrimaryButton className="bg-[#F9FAFE] px-6 py-4 hover:bg-invoicify-05 text-invoicify-07 dark:text-white dark:bg-invoicify-04">
+                  Cancel
+                </PrimaryButton>
+              </div>
+
+              <PrimaryButton
+                className="bg-invoicify-09 px-6 py-4 hover:bg-invoicify-10 text-white"
+                isLoading={deletingInvoiceItem}
+                onClick={() => {
+                  deleteInvoiceItem({
+                    publicId: invoice.publicId,
+                    itemPublicId: itemToRemove?.publicId,
+                  });
+                }}
+              >
+                Delete
+              </PrimaryButton>
+            </div>
+          </div>
+        </div>
+      </Modal>
     </div>
-  );
+  ) : null;
 };
 
 export default EditInvoiceForm;

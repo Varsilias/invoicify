@@ -15,12 +15,12 @@ export const editFormValidationSchema = Yup.object().shape({
     postCode: Yup.string().required("can't be empty"),
     country: Yup.string().required("can't be empty"),
   }),
-  clientAddress: Yup.object().shape({
-    street: Yup.string().required("can't be empty"),
-    city: Yup.string().required("can't be empty"),
-    postCode: Yup.string().required("can't be empty"),
-    country: Yup.string().required("can't be empty"),
-  }),
+
+  clientAddress: Yup.string().required("can't be empty"),
+  clientCity: Yup.string().required("can't be empty"),
+  clientPostcode: Yup.string().required("can't be empty"),
+  clientCountry: Yup.string().required("can't be empty"),
+
   items: Yup.array().of(
     Yup.object().shape({
       name: Yup.string().required("item name is required"),

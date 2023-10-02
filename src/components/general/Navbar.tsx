@@ -25,11 +25,11 @@ const Navbar = () => {
         {dark ? <LightThemeIcon /> : <DarkThemeIcon />}
       </div>
 
-      {isAuthenticated && (
+      {isAuthenticated ? (
         <div className="divider w-[2px] h-[72px] bg-[#494E6E]"></div>
-      )}
+      ) : null}
 
-      {isAuthenticated && (
+      {isAuthenticated ? (
         <div className="profile_icon px-6">
           <div
             className="h-8 w-8 rounded-full cursor-pointer"
@@ -38,7 +38,7 @@ const Navbar = () => {
             <img src={profileIcon} alt="profile picture" />
           </div>
         </div>
-      )}
+      ) : null}
     </div>
   );
 };

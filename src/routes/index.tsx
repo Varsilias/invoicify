@@ -31,16 +31,6 @@ export const router = createBrowserRouter([
     ],
   },
   {
-    path: "/auth/sign-up",
-    errorElement: <Error />,
-    element: <Home />,
-  },
-  {
-    path: "/auth/login",
-    errorElement: <Error />,
-    element: <Home />,
-  },
-  {
     path: "/",
     errorElement: <Error />,
     element: <Home />,

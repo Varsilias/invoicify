@@ -8,6 +8,7 @@ import { QueryClientProvider, QueryClient } from "react-query";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.min.css";
 import { CloseButton } from "./components/general/buttons/CloseButton";
+import { FilterContextProvider } from "./context/FilterContext";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -23,22 +24,24 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
     <QueryClientProvider client={queryClient}>
       <ThemeContextProvider>
         <AuthContextProvider>
-          <ToastContainer
-            position="top-right"
-            autoClose={5000}
-            hideProgressBar={true}
-            toastStyle={{
-              borderRadius: "8px",
-              boxShadow: "0px 12px 16px -4px #0000001A",
-              border: "1px solid #b6b6b61a",
-              width: "100%",
-            }}
-            newestOnTop={false}
-            closeOnClick
-            pauseOnHover
-            closeButton={CloseButton}
-          />
-          <RouterProvider router={router} />
+          <FilterContextProvider>
+            <ToastContainer
+              position="top-right"
+              autoClose={5000}
+              hideProgressBar={true}
+              toastStyle={{
+                borderRadius: "8px",
+                boxShadow: "0px 12px 16px -4px #0000001A",
+                border: "1px solid #b6b6b61a",
+                width: "100%",
+              }}
+              newestOnTop={false}
+              closeOnClick
+              pauseOnHover
+              closeButton={CloseButton}
+            />
+            <RouterProvider router={router} />
+          </FilterContextProvider>
         </AuthContextProvider>
       </ThemeContextProvider>
     </QueryClientProvider>

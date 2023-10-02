@@ -1,21 +1,40 @@
-import data from "../../../../data.json";
 import { Link } from "react-router-dom";
 import StatusButton from "../../general/buttons/StatusButton";
 import { formatDate } from "../../../utils";
+import InvoiceRecordSkeleton from "../../general/skeletons/InvoiceRecordSkeleton";
+import NoInvoice from "./NoInvoice";
 
-const InvoiceList = () => {
-  return (
+const InvoiceList = ({
+  isLoading = true,
+  invoices = [],
+}: {
+  isLoading: boolean;
+  invoices: Array<Record<string, string>>;
+}) => {
+  if (isLoading) {
+    return (
+      <div className="pb-20 md:pb-40">
+        {[1, 2, 3, 4, 5].map((num) => (
+          <div key={num} className="mb-4">
+            <InvoiceRecordSkeleton />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  return invoices.length > 0 ? (
     <div className="pb-20 md:pb-40">
-      {data.map((invoice) => (
+      {invoices.map((invoice) => (
         <Link
-          key={invoice.id}
-          to={`/invoice/${invoice.id}`}
+          key={invoice.publicId}
+          to={`/invoice/${invoice.publicId}`}
           className="px-6 md:px-4 cursor-pointer bg-white grid grid-cols-2 items-center dark:bg-invoicify-03 mb-4 md:flex md:flex-wrap md:justify-around py-5 last:mb-0"
         >
           <h4 className="basis-auto grow md:grow-0">
             <span className="text-invoicify-07">#</span>
             <span className="text-sm-variant dark:text-white">
-              {invoice.id}
+              {invoice.invoiceId}
             </span>
           </h4>
 
@@ -24,12 +43,12 @@ const InvoiceList = () => {
           </h4>
 
           <h4 className="text-body hidden md:block text-[#858BB2] basis-auto">{`Due ${formatDate(
-            invoice.paymentDue
+            invoice.paymentDue,
           )}`}</h4>
 
           <h4 className="text-sm space-x-0.5 dark:text-white mt-6 md:mt-0">
             <div className="md:hidden text-body text-[#858BB2]">{`Due ${formatDate(
-              invoice.paymentDue
+              invoice.paymentDue,
             )}`}</div>
             <div>
               <span>£</span>
@@ -55,6 +74,8 @@ const InvoiceList = () => {
         </Link>
       ))}
     </div>
+  ) : (
+    <NoInvoice />
   );
 };
 

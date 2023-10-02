@@ -16,7 +16,7 @@ const BottomNavWithModal = ({ invoice }: { invoice: Record<string, any> }) => {
 
   return (
     <div className="flex justify-between items-center md:justify-end md:space-x-2">
-      <Link to={`/invoice/edit/${invoice.id}`}>
+      <Link to={`/invoice/edit/${invoice.publicId}`}>
         <div className="edit_button" onClick={() => setShowEditForm(true)}>
           <PrimaryButton className="rounded-3xl hover:bg-invoicify-05 cursor-pointer dark:text-invoicify-05 dark:bg-invoicify-04 bg-[#F9FAFE] px-6 py-4 text-invoicify-07">
             Edit

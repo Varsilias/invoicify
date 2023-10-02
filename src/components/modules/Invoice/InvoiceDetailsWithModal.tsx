@@ -1,21 +1,36 @@
 import TopBar from "../../general/TopBar";
 import { useParams } from "react-router-dom";
-import data from "../../../../data.json";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import StatusButton from "../../general/buttons/StatusButton";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import BottomNavWithModal from "../../general/BottomNavWithModal";
+import { handleError } from "../../../utils";
+import { Toast } from "../../general/toast/Toast";
+import { toast } from "react-toastify";
+import useGetInvoiceByPublicId from "../../../hooks/api/invoices/useGetInvoiceByPublicId";
 dayjs.extend(customParseFormat);
 
 const InvoiceDetailsWithModal = () => {
+  const [invoice, setInvoice] = useState<Record<string, any>>({});
   const { id } = useParams();
 
-  const [invoice, _] = useState(() =>
-    data.find((invoice) => invoice.id === id)
-  );
+  const { isLoading, mutate: getInvoiceByPublicId } = useGetInvoiceByPublicId({
+    onSuccess(data) {
+      const res = data?.data;
 
-  return (
+      setInvoice(res?.data);
+    },
+    onError(error) {
+      handleError(error, (message) => toast(<Toast>{message}</Toast>));
+    },
+  });
+
+  useEffect(() => {
+    getInvoiceByPublicId({ publicId: id });
+  }, [id, getInvoiceByPublicId]);
+
+  return !isLoading ? (
     <section className="pb-40 md:pb-20">
       <div className="my-8">
         <TopBar isMainPage={false} />
@@ -24,10 +39,10 @@ const InvoiceDetailsWithModal = () => {
         <div className="status flex items-center bg-white mb-6 dark:bg-invoicify-03 p-6">
           <div className="flex items-center justify-between md:justify-normal md:space-x-5 w-full md:w-[30%]">
             <h3 className="text-body text-[#858BB2]">Status</h3>
-            <StatusButton text={invoice?.status!} />
+            <StatusButton text={invoice?.status} />
           </div>
           <div className="hidden md:block w-[70%]">
-            <BottomNavWithModal invoice={invoice!} />
+            <BottomNavWithModal invoice={invoice} />
           </div>
         </div>
 
@@ -37,7 +52,7 @@ const InvoiceDetailsWithModal = () => {
               <h1>
                 <span className="text-invoicify-07">#</span>
                 <span className="text-sm-variant text-invoicify-08 dark:text-white">
-                  {invoice?.id}
+                  {invoice?.invoiceId}
                 </span>
               </h1>
               <p className="text-invoicify-07 text-body">
@@ -47,10 +62,10 @@ const InvoiceDetailsWithModal = () => {
 
             <div className="w-[88px] whitespace-nowrap flex justify-center items-center flex-wrap my-[30px] md:my-0 text-body text-invoicify-07">
               <div className="space-y-2">
-                <p>{invoice?.senderAddress.street}</p>
-                <p>{invoice?.senderAddress.city}</p>
-                <p>{invoice?.senderAddress.postCode}</p>
-                <p>{invoice?.senderAddress.country}</p>
+                <p>{invoice?.senderAddress?.street}</p>
+                <p>{invoice?.senderAddress?.city}</p>
+                <p>{invoice?.senderAddress?.postCode}</p>
+                <p>{invoice?.senderAddress?.country}</p>
               </div>
             </div>
           </div>
@@ -86,10 +101,10 @@ const InvoiceDetailsWithModal = () => {
                 </h3>
                 <div className="w-[88px] whitespace-nowrap flex justify-center items-center flex-wrap text-body text-invoicify-07">
                   <div className="space-y-2">
-                    <p>{invoice?.clientAddress.street}</p>
-                    <p>{invoice?.clientAddress.city}</p>
-                    <p>{invoice?.clientAddress.postCode}</p>
-                    <p>{invoice?.clientAddress.country}</p>
+                    <p>{invoice?.clientAddress}</p>
+                    <p>{invoice?.clientCity}</p>
+                    <p>{invoice?.clientPostCode}</p>
+                    <p>{invoice?.clientCountry}</p>
                   </div>
                 </div>{" "}
               </div>
@@ -106,7 +121,7 @@ const InvoiceDetailsWithModal = () => {
           </div>
 
           <div className="items bg-[#F9FAFE] rounded-tr-md rounded-tl-md p-6 dark:bg-invoicify-04">
-            {invoice?.items.map((item) => (
+            {invoice?.items?.map((item: any) => (
               <li
                 key={item.name}
                 className="flex justify-between mb-6 last:mb-0 items-center"
@@ -136,10 +151,10 @@ const InvoiceDetailsWithModal = () => {
       </div>
 
       <div className="md:hidden bg-white dark:bg-invoicify-03 px-6 py-[22px] fixed bottom-0 h-[91px] left-0 w-full">
-        <BottomNavWithModal invoice={invoice!} />
+        <BottomNavWithModal invoice={invoice} />
       </div>
     </section>
-  );
+  ) : null;
 };
 
 export default InvoiceDetailsWithModal;

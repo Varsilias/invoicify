@@ -3,13 +3,49 @@ import Input from "../../general/forms/Input";
 import PrimaryButton from "../../general/buttons/PrimaryButton";
 import { Link } from "react-router-dom";
 import { loginFormValidation } from "../../general/forms/validation-schema";
+import { useLogin } from "../../../hooks/api/auth/useLogin";
+import { ACCESS_TOKEN_KEY, handleError } from "../../../utils";
+import { toast } from "react-toastify";
+import { Toast } from "../../general/toast/Toast";
+import { useAuthContext } from "../../../context";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
-  const initialValues = {
-    password: "",
-    email: "",
-  };
+  const navigate = useNavigate();
 
+  const { setToken } = useAuthContext();
+  const { isLoading, mutate: login } = useLogin({
+    onSuccess(data) {
+      const res = data?.data;
+
+      if (!res?.status || res?.status === "error") {
+        handleError(data, (message) =>
+          toast(<Toast type="error">{message}</Toast>),
+        );
+        return;
+      } else {
+        toast(<Toast type="success">{res?.message}</Toast>);
+
+        const access_token = res?.data?.access_token;
+        localStorage.setItem(ACCESS_TOKEN_KEY, access_token);
+        setToken(access_token);
+        setTimeout(() => {
+          navigate("/", { replace: true });
+        }, 2000);
+      }
+    },
+
+    onError(error) {
+      handleError(error, (message) =>
+        toast(<Toast type="error">{message}</Toast>),
+      );
+    },
+  });
+
+  const initialValues = {
+    password: "P@ssword1234",
+    email: "john2@gmail.com",
+  };
   return (
     <section className="pb-36">
       <div className="py-8 md:py-8 px-8 bg-white dark:bg-invoicify-03 mt-8 rounded-md">
@@ -19,7 +55,7 @@ const Login = () => {
             initialValues={initialValues}
             validationSchema={loginFormValidation}
             onSubmit={(values) => {
-              console.log(values);
+              login(values);
             }}
           >
             {() => (
@@ -71,6 +107,7 @@ const Login = () => {
                   <div className="mark_paid_button">
                     <PrimaryButton
                       type="submit"
+                      isLoading={isLoading}
                       className="whitespace-nowrap rounded-3xl cursor-pointer px-6 py-4 text-white bg-invoicify-01"
                     >
                       Login
@@ -92,6 +129,7 @@ const Login = () => {
                     <div className="mark_paid_button">
                       <PrimaryButton
                         type="submit"
+                        isLoading={isLoading}
                         className="whitespace-nowrap rounded-3xl cursor-pointer px-4 py-4 text-white bg-invoicify-01"
                       >
                         Login

@@ -14,10 +14,8 @@ const InvoiceListWithModal = () => {
   const [showCreateInvoiceForm, setShowCreateInvoiceForm] = useState(true);
 
   useEffect(() => {
-    document.body.style.overflow = showCreateInvoiceForm ? "hidden" : "";
-  }, [showCreateInvoiceForm]);
-
-  console.log({ showCreateInvoiceForm });
+    document.body.style.overflow = "hidden";
+  }, []);
 
   const { breakpoint } = useMediaQuery();
   return (
@@ -53,6 +51,7 @@ const InvoiceListWithModal = () => {
           <FormModal
             showModal={showCreateInvoiceForm}
             onClick={() => {
+              document.body.style.overflow = "";
               setShowCreateInvoiceForm(false);
               navigate(-1);
             }}
@@ -87,12 +86,12 @@ const InvoiceListWithModal = () => {
               </h4>
 
               <h4 className="text-body hidden md:block text-[#858BB2] basis-auto">{`Due ${formatDate(
-                invoice.paymentDue
+                invoice.paymentDue,
               )}`}</h4>
 
               <h4 className="text-sm space-x-0.5 dark:text-white mt-6 md:mt-0">
                 <div className="md:hidden text-body text-[#858BB2]">{`Due ${formatDate(
-                  invoice.paymentDue
+                  invoice.paymentDue,
                 )}`}</div>
                 <div>
                   <span>£</span>

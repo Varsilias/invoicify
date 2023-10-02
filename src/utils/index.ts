@@ -38,3 +38,47 @@ export const formatDate = (value: string) => {
 };
 
 export const ACCESS_TOKEN_KEY = "invoicify_token";
+
+export const handleError = (e: any, callback: (message: string) => void) => {
+  let message;
+
+  if (e.response) {
+    if (e.response.status === 401) {
+      message = "You are unauthorized";
+    } else {
+      const res = e?.response.data.message;
+
+      if (typeof res === "string") {
+        message = res;
+      } else {
+        message = res[0];
+      }
+    }
+  } else {
+    message = e.message;
+  }
+
+  callback(message);
+};
+
+export const handleSuccessBlockError = (
+  res: any,
+  callback: (message: string) => void,
+) => {
+  let message;
+
+  if (res?.errors && !Object.keys(res?.errors).length) {
+    message = res?.message;
+  } else {
+    const err = Object.values(res?.errors)[0] as string;
+    message = err;
+  }
+
+  callback(message);
+};
+
+export const clean = (object: object) =>
+  JSON.parse(JSON.stringify(object, (_, value) => value ?? undefined));
+
+export const getQueryStringParams = (queryStringParam: object) =>
+  new URLSearchParams(clean(queryStringParam)).toString();

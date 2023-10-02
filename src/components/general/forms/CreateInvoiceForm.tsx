@@ -2,44 +2,22 @@ import { Form, FieldArray, FieldProps, Field, Formik } from "formik";
 import { ArrowDown, DeleteIcon } from "../../icons";
 import PrimaryButton from "../buttons/PrimaryButton";
 import "react-datepicker/dist/react-datepicker.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import useClickOutside from "../../../hooks/useClickOutside";
 import { useNavigate } from "react-router-dom";
 import { createInvoiceFormValidationSchema } from "./validation-schema";
 import Input from "./Input";
 import ReadOnlyInput from "./ReadOnlyInput";
+import useGetProfileDetails from "../../../hooks/api/auth/useGetProfileDetails";
+import { handleError } from "../../../utils";
+import { Toast } from "../toast/Toast";
+import { toast } from "react-toastify";
+import useCreateInvoice from "../../../hooks/api/invoices/useCreateInvoice";
 
 const CreateInvoiceForm = () => {
   const navigate = useNavigate();
-
-  const { ref } = useClickOutside({
-    onClickOutside() {
-      setShowDropdown(false);
-    },
-  });
-
-  const dropdown = [
-    { text: "Net 1 Day", value: 1 },
-    { text: "Net 7 Days", value: 7 },
-    { text: "Net 14 Days", value: 14 },
-    { text: "Net 30 Days", value: 30 },
-  ];
-
-  //   const convertInvoiceDateIntervalsToNumbers = (
-  //     dueDate: string,
-  //     invoiceDateCreated: string
-  //   ) => {
-  //     const date1 = dayjs(dueDate);
-  //     const date2 = dayjs(invoiceDateCreated);
-  //     return date1.diff(date2, "days");
-  //   };
-
-  //   const interval = convertInvoiceDateIntervalsToNumbers(
-  //     invoice.paymentDue,
-  //     invoice.createdAt
-  //   );
-
-  const initialValues = {
+  const [clickedButton, setClickedButton] = useState<"Save" | "Draft">("Save");
+  const [initialValues, setInitialValues] = useState<Record<string, any>>({
     paymentDue: "",
     description: "",
     paymentTerms: "",
@@ -65,7 +43,78 @@ const CreateInvoiceForm = () => {
         total: 0,
       },
     ],
-  };
+  });
+  const [showWarning, setShowWarning] = useState(false);
+
+  useEffect(() => {
+    const senderAddress = initialValues.senderAddress;
+    const values = Object.values(senderAddress) as string[];
+    const isProfileUpdated = values.every((element) => element !== "");
+
+    if (!isProfileUpdated) {
+      setShowWarning(true);
+    } else {
+      setShowWarning(false);
+    }
+  }, [initialValues, showWarning]);
+
+  const { mutate: getProfileDetails } = useGetProfileDetails({
+    onSuccess(data) {
+      const res = data?.data;
+
+      setInitialValues((prev) => {
+        return {
+          ...prev,
+          senderAddress: {
+            street: res?.data?.street ?? "",
+            city: res?.data?.city ?? "",
+            postCode: res?.data?.postCode ?? "",
+            country: res?.data?.country ?? "",
+          },
+        };
+      });
+    },
+    onError(error) {
+      handleError(error, (message) =>
+        toast(<Toast type="error">{message}</Toast>),
+      );
+    },
+  });
+
+  const { isLoading: creatingInvoice, mutate: createInvoice } =
+    useCreateInvoice({
+      onSuccess(data) {
+        const res = data?.data;
+        if (!res?.status || res?.status === "error") {
+          toast(<Toast type="error">{res?.message}</Toast>);
+        } else {
+          toast(<Toast type="success">{"Invoice created successfully"}</Toast>);
+          navigate("/");
+        }
+      },
+      onError(error) {
+        handleError(error, (message) =>
+          toast(<Toast type="error">{message}</Toast>),
+        );
+      },
+    });
+
+  useEffect(() => {
+    getProfileDetails({});
+  }, [getProfileDetails]);
+
+  const { ref } = useClickOutside({
+    onClickOutside() {
+      setShowDropdown(false);
+    },
+  });
+
+  const dropdown = [
+    { text: "Net 1 Day", value: 1 },
+    { text: "Net 7 Days", value: 7 },
+    { text: "Net 14 Days", value: 14 },
+    { text: "Net 30 Days", value: 30 },
+  ];
 
   const [paymentTerms, setPaymentTerms] = useState({
     text: "Net 1 Day",
@@ -76,14 +125,47 @@ const CreateInvoiceForm = () => {
   return (
     <div>
       <Formik
+        enableReinitialize={true}
         initialValues={initialValues}
         validationSchema={createInvoiceFormValidationSchema}
         onSubmit={(values) => {
-          console.log(values);
+          const status = clickedButton === "Save" ? "Pending" : "Draft";
+
+          const data = {
+            description: values.description,
+            status: status,
+            clientName: values.clientName,
+            clientEmail: values.clientEmail,
+            clientAddress: values.clientAddress.street,
+            clientCity: values.clientAddress.city,
+            clientPostcode: values.clientAddress.postCode,
+            clientCountry: values.clientAddress.country,
+            paymentDue: values.paymentDue,
+            paymentTerms: values.paymentTerms,
+            items: values.items,
+          };
+          createInvoice(data);
         }}
       >
         {({ setFieldValue, values }) => (
           <Form>
+            {showWarning ? (
+              <div className="hidden md:block md:pb-[43px] md:space-y-2">
+                <p className="text-invoicify-09 text-body">
+                  - You have to update your profile before you can create a new
+                  invoice
+                  <span
+                    className="text-invoicify-01 ml-1 cursor-pointer"
+                    onClick={() => {
+                      document.body.style.overflow = "";
+                      navigate("/profile");
+                    }}
+                  >
+                    <strong>Update Profile</strong>
+                  </span>
+                </p>
+              </div>
+            ) : null}
             {/* Bill From */}
             <section className="bill_from mb-10">
               <h2 className="pb-6 text-sm-variant text-invoicify-01">
@@ -101,6 +183,7 @@ const CreateInvoiceForm = () => {
                       meta={meta}
                       inputType="text"
                       label="Street Address"
+                      disabled={true}
                     />
                   )}
                 </Field>
@@ -116,6 +199,8 @@ const CreateInvoiceForm = () => {
                         meta={meta}
                         inputType="text"
                         label="City"
+                        disabled={true}
+                        className="cursor-not-allowed"
                       />
                     )}
                   </Field>
@@ -130,6 +215,7 @@ const CreateInvoiceForm = () => {
                         meta={meta}
                         inputType="text"
                         label="Post Code"
+                        disabled={true}
                       />
                     )}
                   </Field>
@@ -144,6 +230,7 @@ const CreateInvoiceForm = () => {
                         meta={meta}
                         inputType="text"
                         label="Country"
+                        disabled={true}
                       />
                     )}
                   </Field>
@@ -164,6 +251,7 @@ const CreateInvoiceForm = () => {
                       field={field}
                       form={form}
                       meta={meta}
+                      disabled={showWarning}
                       inputType="text"
                       label="Client's Name"
                     />
@@ -178,6 +266,7 @@ const CreateInvoiceForm = () => {
                       field={field}
                       form={form}
                       meta={meta}
+                      disabled={showWarning}
                       inputType="text"
                       label="Client's Email"
                     />
@@ -192,6 +281,7 @@ const CreateInvoiceForm = () => {
                       field={field}
                       form={form}
                       meta={meta}
+                      disabled={showWarning}
                       inputType="text"
                       label="Street Address"
                     />
@@ -207,6 +297,7 @@ const CreateInvoiceForm = () => {
                         field={field}
                         form={form}
                         meta={meta}
+                        disabled={showWarning}
                         inputType="text"
                         label="City"
                       />
@@ -221,6 +312,7 @@ const CreateInvoiceForm = () => {
                         field={field}
                         form={form}
                         meta={meta}
+                        disabled={showWarning}
                         inputType="text"
                         label="Post Code"
                       />
@@ -235,6 +327,7 @@ const CreateInvoiceForm = () => {
                         field={field}
                         form={form}
                         meta={meta}
+                        disabled={showWarning}
                         inputType="text"
                         label="Country"
                       />
@@ -253,6 +346,7 @@ const CreateInvoiceForm = () => {
                         field={field}
                         form={form}
                         meta={meta}
+                        disabled={showWarning}
                         inputType="date"
                         label="Invoice Date"
                       />
@@ -272,7 +366,9 @@ const CreateInvoiceForm = () => {
                       className={`${
                         showDropdown ? "border-invoicify-01" : ""
                       } flex px-5 py-4 outline-none border border-invoicify-05 dark:border-invoicify-04 rounded text-sm-variant dark:text-white dark:bg-invoicify-03`}
-                      onClick={() => setShowDropdown(!showDropdown)}
+                      onClick={() =>
+                        !showWarning && setShowDropdown(!showDropdown)
+                      }
                     >
                       <div id="paymentTerms" className="w-[96%]">
                         {paymentTerms?.text}
@@ -315,6 +411,7 @@ const CreateInvoiceForm = () => {
                       field={field}
                       form={form}
                       meta={meta}
+                      disabled={showWarning}
                       inputType="text"
                       label="Project Description"
                     />
@@ -353,6 +450,7 @@ const CreateInvoiceForm = () => {
                                       field={field}
                                       form={form}
                                       meta={meta}
+                                      disabled={showWarning}
                                       inputType="text"
                                       label="Item Name"
                                     />
@@ -369,6 +467,7 @@ const CreateInvoiceForm = () => {
                                           field={field}
                                           form={form}
                                           meta={meta}
+                                          disabled={showWarning}
                                           inputType="number"
                                           label="Qty."
                                           min={1}
@@ -385,6 +484,7 @@ const CreateInvoiceForm = () => {
                                           field={field}
                                           form={form}
                                           meta={meta}
+                                          disabled={showWarning}
                                           inputType="text"
                                           label="Price"
                                         />
@@ -411,7 +511,9 @@ const CreateInvoiceForm = () => {
                                 <div className="delete cursor-pointer w-[5%]">
                                   <div
                                     className="flex justify-end md:justify-normal"
-                                    onClick={() => arrayHelpers.remove(index)}
+                                    onClick={() =>
+                                      !showWarning && arrayHelpers.remove(index)
+                                    }
                                   >
                                     <DeleteIcon />
                                   </div>
@@ -422,8 +524,9 @@ const CreateInvoiceForm = () => {
                         : null}
 
                       <PrimaryButton
-                        className="rounded-3xl w-full hover:bg-invoicify-05 cursor-pointer dark:text-invoicify-06 dark:bg-invoicify-04 bg-[#F9FAFE] px-6 py-4 text-invoicify-06"
+                        className="rounded-3xl flex justify-center w-full hover:bg-invoicify-05 cursor-pointer dark:text-invoicify-06 dark:bg-invoicify-04 bg-[#F9FAFE] px-6 py-4 text-invoicify-06"
                         type="button"
+                        disabled={showWarning}
                         onClick={() =>
                           arrayHelpers.push({
                             name: "",
@@ -455,7 +558,11 @@ const CreateInvoiceForm = () => {
                 <PrimaryButton
                   type="button"
                   className="rounded-3xl hover:bg-invoicify-05 cursor-pointer dark:text-invoicify-05 dark:bg-invoicify-04 bg-[#F9FAFE] px-6 py-4 text-invoicify-07"
-                  onClick={() => navigate(-1)}
+                  onClick={() => {
+                    document.body.style.overflow = "";
+                    navigate(-1);
+                  }}
+                  disabled={showWarning}
                 >
                   Discard
                 </PrimaryButton>
@@ -463,9 +570,11 @@ const CreateInvoiceForm = () => {
 
               <div className="edit_button">
                 <PrimaryButton
-                  type="button"
+                  type="submit"
                   className="whitespace-nowrap rounded-3xl hover:bg-invoicify-05 cursor-pointer dark:text-invoicify-05 dark:bg-[#373B53] bg-[#373B53] px-4 py-4 text-invoicify-06"
-                  //   onClick={() => navigate(-1)}
+                  onClick={() => setClickedButton("Draft")}
+                  isLoading={clickedButton === "Draft" && creatingInvoice}
+                  disabled={showWarning}
                 >
                   Save as Draft
                 </PrimaryButton>
@@ -475,6 +584,9 @@ const CreateInvoiceForm = () => {
                 <PrimaryButton
                   type="submit"
                   className="whitespace-nowrap rounded-3xl cursor-pointer px-6 py-4 text-white bg-invoicify-01"
+                  onClick={() => setClickedButton("Save")}
+                  isLoading={clickedButton === "Save" && creatingInvoice}
+                  disabled={showWarning}
                 >
                   Save & Send
                 </PrimaryButton>
@@ -487,7 +599,11 @@ const CreateInvoiceForm = () => {
                   <PrimaryButton
                     type="button"
                     className="rounded-3xl hover:bg-invoicify-05 cursor-pointer dark:text-invoicify-05 dark:bg-invoicify-04 bg-[#F9FAFE] px-5 py-4 text-invoicify-07"
-                    onClick={() => navigate(-1)}
+                    onClick={() => {
+                      document.body.style.overflow = "";
+                      navigate(-1);
+                    }}
+                    disabled={showWarning}
                   >
                     Discard
                   </PrimaryButton>
@@ -495,9 +611,11 @@ const CreateInvoiceForm = () => {
 
                 <div className="edit_button">
                   <PrimaryButton
-                    type="button"
+                    type="submit"
                     className=" whitespace-nowrap rounded-3xl hover:bg-invoicify-05 cursor-pointer dark:text-invoicify-05 dark:bg-[#373B53] bg-[#373B53] px-4 py-4 text-invoicify-06"
-                    // onClick={() => navigate(-1)}
+                    onClick={() => setClickedButton("Draft")}
+                    isLoading={clickedButton === "Draft" && creatingInvoice}
+                    disabled={showWarning}
                   >
                     Save as Draft
                   </PrimaryButton>
@@ -507,6 +625,9 @@ const CreateInvoiceForm = () => {
                   <PrimaryButton
                     type="submit"
                     className="whitespace-nowrap rounded-3xl cursor-pointer px-4 py-4 text-white bg-invoicify-01"
+                    onClick={() => setClickedButton("Save")}
+                    isLoading={clickedButton === "Save" && creatingInvoice}
+                    disabled={showWarning}
                   >
                     Save & Send
                   </PrimaryButton>

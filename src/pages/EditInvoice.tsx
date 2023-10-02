@@ -6,8 +6,6 @@ import useMediaQuery from "../hooks/useMediaQuery";
 const EditInvoice = () => {
   const { breakpoint } = useMediaQuery();
 
-  console.log(breakpoint);
-
   return breakpoint === "sm" || breakpoint === "xs" ? (
     <MainLayout isForm={true}>
       <EditInvoiceComponent />

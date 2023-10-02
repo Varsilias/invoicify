@@ -6,6 +6,7 @@ interface InputProps extends FieldProps {
   disabled?: boolean;
   readOnly?: boolean;
   min?: number;
+  className?: string;
 }
 
 const Input: React.FC<InputProps> = ({
@@ -15,6 +16,7 @@ const Input: React.FC<InputProps> = ({
   inputType,
   label,
   disabled,
+  className,
   ...props
 }) => {
   // console.log({ field, form, meta, inputType });
@@ -42,8 +44,8 @@ const Input: React.FC<InputProps> = ({
             ? "border-invoicify-09 dark:border-invoicify-09"
             : "border-invoicify-05 dark:border-invoicify-04"
         } ${
-          disabled ? "opacity-50" : ""
-        } w-full px-5 py-4 outline-none border border-invoicify-05 rounded text-sm-variant dark:text-white dark:bg-invoicify-03`}
+          disabled ? "opacity-50 cursor-not-allowed" : ""
+        } ${className} w-full px-5 py-4 outline-none border border-invoicify-05 rounded text-sm-variant dark:text-white dark:bg-invoicify-03`}
       />
     </div>
   );

@@ -3,8 +3,40 @@ import Input from "../../general/forms/Input";
 import PrimaryButton from "../../general/buttons/PrimaryButton";
 import { Link } from "react-router-dom";
 import { signUpFormValidation } from "../../general/forms/validation-schema";
+import { toast } from "react-toastify";
+import { Toast } from "../../general/toast/Toast";
+import { useNavigate } from "react-router-dom";
+import useSignup from "../../../hooks/api/auth/useSignup";
+import { handleError } from "../../../utils";
 
 const SignUp = () => {
+  const navigate = useNavigate();
+
+  const { isLoading, mutate: signUp } = useSignup({
+    onSuccess(data) {
+      const res = data?.data;
+      console.log("ON_SUCCESS", res);
+
+      if (!res?.status || res?.status === "error") {
+        handleError(data, (message) =>
+          toast(<Toast type="error">{message}</Toast>),
+        );
+        return;
+      } else {
+        toast(<Toast type="success">{res?.message}</Toast>);
+        setTimeout(() => {
+          navigate("/auth/login");
+        }, 2000);
+      }
+    },
+
+    onError(error) {
+      handleError(error, (message) =>
+        toast(<Toast type="error">{message}</Toast>),
+      );
+    },
+  });
+
   const initialValues = {
     password: "",
     email: "",
@@ -22,6 +54,7 @@ const SignUp = () => {
             validationSchema={signUpFormValidation}
             onSubmit={(values) => {
               console.log(values);
+              signUp(values);
             }}
           >
             {() => (
@@ -85,6 +118,12 @@ const SignUp = () => {
                   <p className="text-invoicify-09 text-body">
                     - All fields are required
                   </p>
+                  <p className="text-invoicify-09 text-body">
+                    - Password must be at least 8 characters long, contain 1
+                  </p>
+                  <p className="text-invoicify-09 text-body">
+                    - Uppercase, 1 lowercase, 1 special character and a number
+                  </p>
                 </div>
 
                 <div className="hidden md:flex md:pb-4 space-x-2 w-full items-center justify-end md:space-x-2">
@@ -101,6 +140,7 @@ const SignUp = () => {
                     <PrimaryButton
                       type="submit"
                       className="whitespace-nowrap rounded-3xl cursor-pointer px-6 py-4 text-white bg-invoicify-01"
+                      isLoading={isLoading}
                     >
                       Sign Up
                     </PrimaryButton>
@@ -122,6 +162,7 @@ const SignUp = () => {
                       <PrimaryButton
                         type="submit"
                         className="whitespace-nowrap rounded-3xl cursor-pointer px-4 py-4 text-white bg-invoicify-01"
+                        isLoading={isLoading}
                       >
                         Sign Up
                       </PrimaryButton>

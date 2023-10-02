@@ -2,7 +2,7 @@ import noinvoice from "../../../assets/no-invoice.png";
 
 const NoInvoice = () => {
   return (
-    <div className="flex w-full h-full items-center justify-center">
+    <div className="flex w-full h-screen items-center justify-center">
       <div>
         <div className="mb-[42px]">
           <img src={noinvoice} alt="No Invoice" />

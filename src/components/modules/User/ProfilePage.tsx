@@ -3,19 +3,66 @@ import Input from "../../general/forms/Input";
 import PrimaryButton from "../../general/buttons/PrimaryButton";
 import { useNavigate } from "react-router-dom";
 import { updateProfileFormValidation } from "../../general/forms/validation-schema";
+import useGetProfileDetails from "../../../hooks/api/auth/useGetProfileDetails";
+import { handleError } from "../../../utils";
+import { toast } from "react-toastify";
+import { Toast } from "../../general/toast/Toast";
+import { useEffect, useState } from "react";
+import ProfileDetailsSkeleton from "../../general/skeletons/ProfileDetailsSkeleton";
+import useUpdateProfile from "../../../hooks/api/auth/useUpdateProfile";
 
 const ProfilePage = () => {
   const navigate = useNavigate();
+  const [initialValues, setInitialValue] = useState({});
 
-  const initialValues = {
-    firstname: "John",
-    lastname: "Doee",
-    email: "john2@gmail.com",
-    street: "123 St. John's street",
-    city: "London",
-    postCode: "E1 3EZ",
-    country: "United Kingdom",
-  };
+  const { isLoading, mutate: getProfileDetails } = useGetProfileDetails({
+    onSuccess(data) {
+      const res = data?.data;
+      console.log("PRO", res);
+
+      setInitialValue({
+        city: res?.data?.city ?? "",
+        country: res?.data?.country ?? "",
+        email: res?.data?.email ?? "",
+        firstname: res?.data?.firstname ?? "",
+        lastname: res?.data?.lastname ?? "",
+        postCode: res?.data?.postCode ?? "",
+        street: res?.data?.street ?? "",
+      });
+    },
+    onError(error) {
+      handleError(error, (message) =>
+        toast(<Toast type="error">{message}</Toast>),
+      );
+    },
+  });
+
+  const { isLoading: updatingProfile, mutate: updateProfile } =
+    useUpdateProfile({
+      onSuccess(data) {
+        const res = data?.data;
+
+        if (res?.status === "error") {
+          toast(<Toast type="error">{res?.message}</Toast>);
+          return;
+        }
+        toast(<Toast type="success">{"Profile updated successfully"}</Toast>);
+        setInitialValue(res?.data);
+      },
+      onError(error) {
+        handleError(error, (message) =>
+          toast(<Toast type="error">{message}</Toast>),
+        );
+      },
+    });
+
+  useEffect(() => {
+    getProfileDetails({});
+  }, [getProfileDetails]);
+
+  if (isLoading) {
+    return <ProfileDetailsSkeleton />;
+  }
 
   return (
     <section className="pb-36">
@@ -26,10 +73,10 @@ const ProfilePage = () => {
             initialValues={initialValues}
             validationSchema={updateProfileFormValidation}
             onSubmit={(values) => {
-              console.log(values);
+              updateProfile(values);
             }}
           >
-            {({ setFieldValue, values }) => (
+            {() => (
               <Form>
                 <div className="flex items-center mb-3 w-full md:space-x-5 flex-wrap md:flex-nowrap">
                   <div className="firstname flex flex-col mb-4 md:basis-1/2 grow md:pr-0">
@@ -160,6 +207,7 @@ const ProfilePage = () => {
                   <div className="mark_paid_button">
                     <PrimaryButton
                       type="submit"
+                      isLoading={updatingProfile}
                       className="whitespace-nowrap rounded-3xl cursor-pointer px-6 py-4 text-white bg-invoicify-01"
                     >
                       Save & Send
@@ -172,6 +220,7 @@ const ProfilePage = () => {
                     <div className="edit_button">
                       <PrimaryButton
                         type="button"
+                        isLoading={updatingProfile}
                         className=" whitespace-nowrap rounded-3xl hover:bg-invoicify-05 cursor-pointer dark:text-invoicify-05 dark:bg-[#373B53] bg-[#373B53] px-4 py-4 text-invoicify-06"
                         onClick={() => navigate(-1)}
                       >

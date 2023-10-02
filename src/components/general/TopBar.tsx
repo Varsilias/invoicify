@@ -6,10 +6,18 @@ import { Link, useNavigate } from "react-router-dom";
 import useMediaQuery from "../../hooks/useMediaQuery";
 import CreateInvoice from "../modules/Invoice/CreateInvoice";
 import FormModal from "./modal/FormModal";
+import { useFilterContext } from "../../context/FilterContext";
 
-const TopBar = ({ isMainPage = true }: { isMainPage?: boolean }) => {
+const TopBar = ({
+  isMainPage = true,
+  invoiceCount = 0,
+}: {
+  isMainPage?: boolean;
+  invoiceCount?: number;
+}) => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [showCreateInvoiceForm, setShowCreateInvoiceForm] = useState(false);
+  const { dispatch, selectedFilterOption } = useFilterContext();
 
   const { breakpoint } = useMediaQuery();
 
@@ -21,6 +29,11 @@ const TopBar = ({ isMainPage = true }: { isMainPage?: boolean }) => {
 
   const navigate = useNavigate();
 
+  const handleSetFilter = (filterOption: string) => {
+    dispatch({ type: filterOption, payload: {} });
+    setShowDropdown(false);
+  };
+
   return (
     <React.Fragment>
       {isMainPage ? (
@@ -31,8 +44,8 @@ const TopBar = ({ isMainPage = true }: { isMainPage?: boolean }) => {
             </h1>
             <p className="text-invoicify-06 text-body dark:text-invoicify-05">
               {breakpoint === "xs" || breakpoint === "sm"
-                ? `7 Invoices`
-                : `There are 7 Invoices`}
+                ? `${invoiceCount} Invoices`
+                : `There are ${invoiceCount} Invoices`}
             </p>
           </div>
 
@@ -56,17 +69,21 @@ const TopBar = ({ isMainPage = true }: { isMainPage?: boolean }) => {
                 onClick={(e) => e.stopPropagation()}
               >
                 <ul>
-                  {["Draft", "Pending", "Paid"].map((status) => (
+                  {["Draft", "Pending", "Paid", "All"].map((status) => (
                     <li key={status}>
-                      <input
-                        type="checkbox"
-                        className="mr-[13px] bg-invoicify-01 hover:border-invoicify-01 cursor-pointer"
-                        name={status}
-                        id={status}
-                      />
-                      <span className="text-sm-variant dark:text-white">
-                        {status}
-                      </span>
+                      <label htmlFor={status} className="cursor-pointer">
+                        <input
+                          type="radio"
+                          className="mr-[13px] bg-invoicify-01 hover:border-invoicify-01 cursor-pointer"
+                          name="status"
+                          id={status}
+                          checked={status === selectedFilterOption}
+                          onChange={(e) => handleSetFilter(e.target.id)}
+                        />
+                        <span className="text-sm-variant dark:text-white">
+                          {status}
+                        </span>
+                      </label>
                     </li>
                   ))}
                 </ul>
@@ -78,12 +95,14 @@ const TopBar = ({ isMainPage = true }: { isMainPage?: boolean }) => {
             <Link to={`/invoice/new`}>
               <div onClick={() => setShowCreateInvoiceForm(true)}>
                 <PrimaryButton className="bg-invoicify-01 py-[6px] pl-2 pr-3 flex items-center">
-                  <AddNewIcon />
-                  <span className="ml-2 text-white">
-                    {breakpoint === "xs" || breakpoint === "sm"
-                      ? `New`
-                      : `New Invoice`}
-                  </span>
+                  <div className="flex items-center">
+                    <AddNewIcon />
+                    <span className="ml-2 text-white">
+                      {breakpoint === "xs" || breakpoint === "sm"
+                        ? `New`
+                        : `New Invoice`}
+                    </span>
+                  </div>
                 </PrimaryButton>
               </div>
             </Link>
@@ -92,7 +111,10 @@ const TopBar = ({ isMainPage = true }: { isMainPage?: boolean }) => {
       ) : (
         <div
           className="flex items-center w-full cursor-pointer"
-          onClick={() => navigate(-1)}
+          onClick={() => {
+            document.body.style.overflow = "";
+            navigate(-1);
+          }}
         >
           <div className="mr-6">
             <BackIcon />
